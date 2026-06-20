@@ -28,15 +28,16 @@ Build a full-stack Next.js cooking to-do list micro-app to practice real-world a
 - [x] Restructure error handling to report failures honestly (no fake mock fallbacks)
 - [x] Create workspace-wide consolidated rules guidelines (`rules.md`)
 - [x] Relocate Git repository into `warmup/` folder and force push to remote root
+- [x] Add Node.js engine target `22.x` to `package.json` for Vercel deployment stability
 
 ---
 
 ## 🧪 Verification Logs & Run Testing
-- **Last Run Verification**: Next.js production build (`npm run build`) and Vitest test suite completed successfully. Git repository initialized inside `warmup/` and force-pushed successfully.
+- **Last Run Verification**: Next.js production build (`npm run build`) completed successfully with Node 22 engines spec. Git push completed successfully.
 - **Status**: Production-ready, fully verified and compiled. Remote repository updated on GitHub.
-- **Command Used**: `git push -u origin main --force`
+- **Command Used**: `git push origin main`
 - **Output/Results**:
   - **GitHub Remote**: Pushed to `git@github-work:TheManishCode/warm-up-challenge-PromptWars-Mysore-.git`
   - **Database Size**: `db.json` size: `205 bytes` (Clean Slate). `db.test.json` size: `1139 bytes` (Test outputs isolated).
-  - **Build**: All pages and API endpoints fully compiled in `1711ms`.
+  - **Build**: All pages and API endpoints fully compiled in `1847ms`.
   - **Tests**: `10 passed` across 3 test suites.
