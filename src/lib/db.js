@@ -18,8 +18,13 @@ const DEFAULT_DB = {
   substitutions: [] // Array of subs: { id, meal_id, original, substitute, reason }
 };
 
+// Global in-memory fallback state for read-only serverless platforms like Vercel
+let memoryDb = null;
+let useMemoryDb = false;
+
 // Helper to ensure database file exists
 async function ensureDb() {
+  if (useMemoryDb) return;
   const dir = path.dirname(DB_FILE);
   try {
     await fs.mkdir(dir, { recursive: true });
@@ -30,32 +35,55 @@ async function ensureDb() {
   try {
     await fs.access(DB_FILE);
   } catch (err) {
-    // File doesn't exist, create default
-    await fs.writeFile(DB_FILE, JSON.stringify(DEFAULT_DB, null, 2), 'utf-8');
+    try {
+      await fs.writeFile(DB_FILE, JSON.stringify(DEFAULT_DB, null, 2), 'utf-8');
+    } catch (writeErr) {
+      console.warn('Failed to write database file. Falling back to in-memory database.', writeErr);
+      useMemoryDb = true;
+      memoryDb = JSON.parse(JSON.stringify(DEFAULT_DB));
+    }
   }
 }
 
 // Read database
 export async function readDb() {
-  await ensureDb();
+  if (useMemoryDb) {
+    return memoryDb;
+  }
+
   try {
+    await ensureDb();
+    if (useMemoryDb) return memoryDb; // Check if fell back during ensureDb
     const data = await fs.readFile(DB_FILE, 'utf-8');
     return JSON.parse(data);
   } catch (err) {
-    console.error('Failed to read db file, resetting to default', err);
-    return DEFAULT_DB;
+    console.warn('Failed to read database file. Falling back to in-memory database.', err);
+    useMemoryDb = true;
+    memoryDb = JSON.parse(JSON.stringify(DEFAULT_DB));
+    return memoryDb;
   }
 }
 
 // Write database
 export async function writeDb(data) {
-  await ensureDb();
+  if (useMemoryDb) {
+    memoryDb = data;
+    return true;
+  }
+
   try {
+    await ensureDb();
+    if (useMemoryDb) {
+      memoryDb = data;
+      return true;
+    }
     await fs.writeFile(DB_FILE, JSON.stringify(data, null, 2), 'utf-8');
     return true;
   } catch (err) {
-    console.error('Failed to write db file', err);
-    return false;
+    console.warn('Failed to write database file. Falling back to in-memory database.', err);
+    useMemoryDb = true;
+    memoryDb = data;
+    return true;
   }
 }
 
